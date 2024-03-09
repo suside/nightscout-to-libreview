@@ -67,7 +67,7 @@ const authLibreView = async function (username, password, device, setDevice) {
     }
   });
 
-  console.log('authLibreView, response', response.data.gray);
+  console.log('authLibreView, response', response.data);
 
   if (response.data.status !== 0) {
     return;
@@ -134,7 +134,7 @@ const transferLibreView = async function (device, token, glucoseEntries, foodEnt
     }
   });
 
-  console.log('transferLibreView, response', response.data.gray);
+  console.log('transferLibreView, response', response.data);
 };
 
 exports.authLibreView = authLibreView;
