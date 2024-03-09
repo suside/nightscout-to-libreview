@@ -63,7 +63,11 @@ const getNightscoutFoodEntries = async function (baseUrl, token, fromDate, toDat
 };
 
 const getNightscoutGlucoseEntries = async function (baseUrl, token, fromDate, toDate) {
-  const url = `${baseUrl}/api/v1/entries.json?find[dateString][$gte]=${fromDate}&find[dateString][$lte]=${toDate}&count=131072${getNightscoutToken(token)}`;
+  const url = `${baseUrl}/api/v1/entries.json?find[date][$gte]=${new Date(
+    fromDate
+  ).getTime()}&find[date][$lte]=${new Date(
+    toDate
+  ).getTime()}&count=131072${getNightscoutToken(token)}`;
   console.log('glucose entries url', url.gray);
 
   const response = await axios.get(url, {
@@ -74,9 +78,9 @@ const getNightscoutGlucoseEntries = async function (baseUrl, token, fromDate, to
 
   const data = response.data.filter((value, index, Arr) => index % 3 == 0).map(d => {
     return {
-      id: parseInt(`1${dayjs(d.dateString).format('YYYYMMDDHHmmss')}`),
+      id: parseInt(`1${dayjs(d.date).format('YYYYMMDDHHmmss')}`),
       sysTime: d.sysTime,
-      dateString: d.dateString,
+      dateString: d.date,
       sgv: d.sgv,
       delta: d.delta,
       direction: d.direction
@@ -85,16 +89,16 @@ const getNightscoutGlucoseEntries = async function (baseUrl, token, fromDate, to
 
   return data.map(e => {
     return {
-      "extendedProperties": {
-        "highOutOfRange": e.sgv >= 400 ? "true" : "false",
-        "canMerge": "true",
-        "isFirstAfterTimeChange": false,
-        "factoryTimestamp": e.sysTime,
-        "lowOutOfRange": e.sgv <= 40 ? "true" : "false"
+      extendedProperties: {
+        highOutOfRange: e.sgv >= 400 ? "true" : "false",
+        canMerge: "true",
+        isFirstAfterTimeChange: false,
+        factoryTimestamp: new Date(e.dateString).toISOString(), // factoryTimestamp: "2023-09-08T19:57:38.000Z",
+        lowOutOfRange: e.sgv <= 40 ? "true" : "false",
       },
-      "recordNumber": e.id,
-      "timestamp": e.dateString,
-      "valueInMgPerDl": e.sgv
+      recordNumber: e.id,
+      timestamp: dayjs(e.dateString).format("YYYY-MM-DDTHH:mm:ss.SSSZ"), //"timestamp": "2023-09-08T21:57:38.000+02:00"
+      valueInMgPerDl: e.sgv,
     };
   });
 };
